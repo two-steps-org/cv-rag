@@ -1,0 +1,14 @@
+.git
+.gitignore
+.env
+.venv
+__pycache__
+*.pyc
+*.pyo
+.DS_Store
+docs-claude/
+cvs/
+uploads/*
+!uploads/.gitkeep
+uv.lock
+.python-version

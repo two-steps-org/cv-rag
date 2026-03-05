@@ -1,17 +1,24 @@
-services:
-  - type: web
-    runtime: python
-    name: hr-resume-agent
-    plan: starter
-    region: frankfurt
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: VOYAGE_API_KEY
-        sync: false
-      - key: ANTHROPIC_API_KEY
-        sync: false
-      - key: ATLAS_CONNECTION_STRING
-        sync: false
-      - key: PYTHON_VERSION
-        value: "3.10.18"
+projects:
+  - name: cv-rag
+    environments:
+      # ============================================
+      # Production Environment (branch: main)
+      # ============================================
+      - name: production
+        services:
+          # Web App (FastAPI with Docker)
+          - type: web
+            runtime: docker
+            name: hr-resume-agent
+            rootDir: ./
+            dockerfilePath: ./Dockerfile
+            dockerContext: ./
+            numInstances: 1
+            region: frankfurt
+            plan: starter
+            branch: main
+            autoDeploy: true
+            maxShutdownDelaySeconds: 120
+            healthCheckPath: /
+            envVars:
+              - fromGroup: cv-rag-env
