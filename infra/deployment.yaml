@@ -16,7 +16,7 @@ projects:
             numInstances: 1
             region: frankfurt
             plan: starter
-            branch: main
+            branch: 1.0.0_dev
             autoDeploy: true
             maxShutdownDelaySeconds: 120
             healthCheckPath: /
