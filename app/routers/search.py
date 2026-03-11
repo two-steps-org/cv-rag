@@ -1,14 +1,13 @@
 """Search router - debug endpoint for vector similarity search against resume chunks."""
 
-import logging
-
 from fastapi import APIRouter, HTTPException
 
+from app.logger import get_logger
 from app.models.schemas import SearchRequest, SearchResult
 from app.services.embeddings import embed_query
 from app.services.vector_store import search_similar
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/api", tags=["search"])
 

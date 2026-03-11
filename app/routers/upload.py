@@ -1,6 +1,5 @@
 """Resume upload router - handles file uploads, listing, deletion, and download."""
 
-import logging
 from pathlib import Path
 
 from bson import ObjectId
@@ -10,6 +9,7 @@ from fastapi.responses import FileResponse
 
 from app.config import settings
 from app.database import get_db
+from app.logger import get_logger
 from app.models.schemas import (
     ResumeDocument,
     ResumeListItem,
@@ -22,7 +22,7 @@ from app.services.extractor import extract_candidate_info
 from app.services.parser import parse_resume
 from app.services.vector_store import store_chunks
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/api/resumes", tags=["resumes"])
 

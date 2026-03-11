@@ -1,13 +1,14 @@
 """Resume parser service - extracts text from PDF and DOCX files."""
 
 import io
-import logging
 import re
 
 import pdfplumber
 from docx import Document
 
-logger = logging.getLogger(__name__)
+from app.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def parse_pdf(content: bytes) -> str:

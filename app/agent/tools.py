@@ -9,17 +9,17 @@ Provides three async LangChain tools that the agent can invoke:
 All tools are async because they call the async MongoDB / VoyageAI services.
 """
 
-import logging
 import re
 from typing import Optional
 
 from langchain_core.tools import tool
 
 from app.database import get_db
+from app.logger import get_logger
 from app.services.embeddings import embed_query
 from app.services.vector_store import get_all_chunks_for_resume, search_similar
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @tool

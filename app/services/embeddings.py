@@ -5,13 +5,12 @@ support: documents are embedded with input_type="document" and queries
 with input_type="query".
 """
 
-import logging
-
 import voyageai
 
 from app.config import settings
+from app.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 MODEL = "voyage-3"
 BATCH_SIZE = 128  # VoyageAI max texts per request
