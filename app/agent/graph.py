@@ -11,7 +11,6 @@ Public API
     stream_agent()   -- Async generator yielding SSE-friendly token events.
 """
 
-import logging
 from typing import AsyncGenerator, Optional
 
 from langchain_anthropic import ChatAnthropic
@@ -20,8 +19,9 @@ from langgraph.prebuilt import create_react_agent
 
 from app.agent.tools import agent_tools
 from app.config import settings
+from app.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants

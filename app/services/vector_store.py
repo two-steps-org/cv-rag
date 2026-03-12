@@ -1,10 +1,9 @@
 """Vector store service - manages MongoDB Atlas vector search operations."""
 
-import logging
-
 from app.database import VECTOR_INDEX_NAME, get_db
+from app.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 COLLECTION_NAME = "resume_chunks"
 EMBEDDING_PATH = "embedding"

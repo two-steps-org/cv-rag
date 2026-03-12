@@ -14,5 +14,11 @@ class Settings(BaseSettings):
     anthropic_api_key: str
     atlas_connection_string: str
 
+    # Elasticsearch (for custom_logger)
+    elasticsearch_host: str = "localhost"
+    elasticsearch_port: int = 9200
+    elasticsearch_index: str = "cv-rag-logs"
+    environment: str = "development"
+
 
 settings = Settings()

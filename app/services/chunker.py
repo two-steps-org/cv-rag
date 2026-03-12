@@ -1,7 +1,8 @@
-import logging
 import re
 
-logger = logging.getLogger(__name__)
+from app.logger import get_logger
+
+logger = get_logger(__name__)
 
 MAX_CHUNK_SIZE = 1500
 OVERLAP_SIZE = 200

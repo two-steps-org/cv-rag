@@ -1,13 +1,12 @@
 """Database module - MongoDB connection management and index setup."""
 
-import logging
-
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pymongo.operations import SearchIndexModel
 
 from app.config import settings
+from app.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 VECTOR_INDEX_NAME = "resume_vector_index"
 

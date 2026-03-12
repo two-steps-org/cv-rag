@@ -4,7 +4,6 @@ Provides SSE streaming chat, session listing, and session deletion.
 """
 
 import json
-import logging
 from datetime import datetime, timezone
 
 from bson import ObjectId
@@ -14,9 +13,10 @@ from fastapi.responses import StreamingResponse
 
 from app.agent.graph import stream_agent
 from app.database import get_db
+from app.logger import get_logger
 from app.models.schemas import ChatRequest, ChatSessionItem
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
