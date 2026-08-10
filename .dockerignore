@@ -10,5 +10,3 @@ docs-claude/
 cvs/
 uploads/*
 !uploads/.gitkeep
-uv.lock
-.python-version
