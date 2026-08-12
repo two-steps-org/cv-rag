@@ -1,22 +1,32 @@
 # Build the cv-rag image, push it to GHCR with a timestamp tag, and open a PR in
 # the deploy repo (two-steps-org/de-hostinger-infra) bumping the image tag in
-# dev/cv-rag/deployment.yaml. Merging that PR triggers the actual Hostinger
+# <env>/cv-rag/deployment.yaml. Merging that PR triggers the actual Hostinger
 # deploy over there. This repo builds; the deploy repo deploys.
+#
+# Branch = environment: push to `dev`, `stag`, or `prod` deploys to that env.
+# `1.0.0_dev` is the default/integration branch and does NOT deploy.
 name: Build & request deploy
 
 on:
   push:
-    branches: ["1.0.0_dev"]
+    branches: [dev, stag, prod]
     paths:
       - "app/**"
       - "Dockerfile"
       - "pyproject.toml"
       - "uv.lock"
       - ".github/workflows/build-and-deploy.yml"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        type: choice
+        options: [dev, stag, prod]
+        default: dev
 
 concurrency:
-  group: build-cv-rag
+  # One in-flight build per environment.
+  group: build-cv-rag-${{ github.event.inputs.environment || github.ref_name }}
   cancel-in-progress: false
 
 permissions:
@@ -26,7 +36,6 @@ permissions:
 env:
   IMAGE: ghcr.io/two-steps-org/twosteps.cv-rag
   INFRA_REPO: two-steps-org/de-hostinger-infra
-  DEPLOY_FILE: dev/cv-rag/deployment.yaml
 
 jobs:
   build-and-request:
@@ -34,6 +43,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
+      - name: Resolve environment
+        id: env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ENV="${{ inputs.environment }}"
+          else
+            ENV="${{ github.ref_name }}"   # dev | stag | prod
+          fi
+          echo "name=$ENV" >> "$GITHUB_OUTPUT"
+          echo "file=$ENV/cv-rag/deployment.yaml" >> "$GITHUB_OUTPUT"
+          echo "Building for environment: $ENV"
+
       - name: Checkout app source
         uses: actions/checkout@v4
 
@@ -51,8 +72,8 @@ jobs:
           username: ${{ github.actor }}
           # GITHUB_TOKEN can push here ONLY if this repo has Write access to the
           # twosteps.cv-rag package (Package settings → Manage Actions access →
-          # add two-steps-org/cv-rag = Write). Otherwise set GHCR_PUSH_TOKEN to a
-          # PAT with write:packages and use it here instead.
+          # add two-steps-org/cv-rag = Write). Otherwise GHCR_PUSH_TOKEN is a PAT
+          # with write:packages.
           password: ${{ secrets.GHCR_PUSH_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Build and push
@@ -70,7 +91,7 @@ jobs:
             ${{ env.IMAGE }}:${{ steps.tag.outputs.ts }}
             ${{ env.IMAGE }}:${{ github.sha }}
 
-      # Check out the deploy repo and bump the image tag in dev/cv-rag/deployment.yaml.
+      # Check out the deploy repo and bump the tag in <env>/cv-rag/deployment.yaml.
       - name: Checkout deploy repo
         uses: actions/checkout@v4
         with:
@@ -80,7 +101,11 @@ jobs:
 
       - name: Bump image tag
         run: |
-          F="infra/${{ env.DEPLOY_FILE }}"
+          F="infra/${{ steps.env.outputs.file }}"
+          if [ ! -f "$F" ]; then
+            echo "::error::$F does not exist in ${{ env.INFRA_REPO }} — set up the '${{ steps.env.outputs.name }}' environment there first."
+            exit 1
+          fi
           sed -i -E "s|(image: ${{ env.IMAGE }}):.*|\1:${{ steps.tag.outputs.ts }}|" "$F"
           grep -q "image: ${{ env.IMAGE }}:${{ steps.tag.outputs.ts }}" "$F" \
             || { echo "::error::Failed to bump image tag in $F"; exit 1; }
@@ -91,14 +116,14 @@ jobs:
         with:
           path: infra
           token: ${{ secrets.INFRA_REPO_TOKEN }}
-          branch: deploy/cv-rag-${{ steps.tag.outputs.ts }}
+          branch: deploy/cv-rag-${{ steps.env.outputs.name }}-${{ steps.tag.outputs.ts }}
           base: main
-          commit-message: "deploy(cv-rag): ${{ steps.tag.outputs.ts }}"
-          title: "deploy(cv-rag): ${{ steps.tag.outputs.ts }}"
+          commit-message: "deploy(cv-rag/${{ steps.env.outputs.name }}): ${{ steps.tag.outputs.ts }}"
+          title: "deploy(cv-rag/${{ steps.env.outputs.name }}): ${{ steps.tag.outputs.ts }}"
           body: |
-            Bump cv-rag (dev) image to `${{ steps.tag.outputs.ts }}`.
+            Bump cv-rag **${{ steps.env.outputs.name }}** image to `${{ steps.tag.outputs.ts }}`.
 
             - image: `${{ env.IMAGE }}:${{ steps.tag.outputs.ts }}`
-            - source commit: ${{ github.sha }}
+            - source: `${{ steps.env.outputs.name }}` @ ${{ github.sha }}
 
-            Merging this deploys to Hostinger via `deploy-cv-rag.yml`.
+            Merging deploys to Hostinger via `deploy-cv-rag-${{ steps.env.outputs.name }}.yml`.
