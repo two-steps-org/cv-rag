@@ -6,13 +6,13 @@ name: Build & request deploy
 
 on:
   push:
-    branches: ['1.0.0_dev']
+    branches: ["dev,stag,prod"]
     paths:
-      - 'app/**'
-      - 'Dockerfile'
-      - 'pyproject.toml'
-      - 'uv.lock'
-      - '.github/workflows/build-and-deploy.yml'
+      - "app/**"
+      - "Dockerfile"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/build-and-deploy.yml"
   workflow_dispatch: {}
 
 concurrency:
