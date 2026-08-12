@@ -6,7 +6,7 @@ name: Build & request deploy
 
 on:
   push:
-    branches: ["dev,stag,prod"]
+    branches: ["1.0.0_dev"]
     paths:
       - "app/**"
       - "Dockerfile"
